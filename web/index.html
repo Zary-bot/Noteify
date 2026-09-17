@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4ef">
+  <meta name="description" content="A quiet offline deadline notifier.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <title>Noteify</title>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">N</span><span>Noteify</span></div>
+      <button class="icon-button" id="notifications-button" type="button" aria-label="Enable notifications" title="Enable notifications">Bell</button>
+    </header>
+
+    <section class="intro">
+      <p class="eyebrow">Your personal deadline desk</p>
+      <h1>Keep the important dates close.</h1>
+      <p class="lede">Plan an activity once. Noteify keeps it visible and reminds you before it matters.</p>
+    </section>
+
+    <section class="toolbar" aria-label="Activity controls">
+      <div>
+        <h2>Upcoming</h2>
+        <p id="count-label">Nothing scheduled yet</p>
+      </div>
+      <button class="primary-button" id="add-button" type="button"><span aria-hidden="true">+</span> Add activity</button>
+    </section>
+
+    <section id="empty-state" class="empty-state">
+      <div class="empty-icon">01</div>
+      <h2>Make room for what matters.</h2>
+      <p>Your next deadline will appear here.</p>
+      <button class="secondary-button" id="empty-add-button" type="button">Add your first activity</button>
+    </section>
+    <section id="notes-list" class="notes-list" aria-live="polite"></section>
+  </main>
+
+  <dialog id="note-dialog">
+    <form method="dialog" id="note-form" class="dialog-card">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">New reminder</p><h2>Add activity</h2></div>
+        <button class="close-button" value="cancel" aria-label="Close">&times;</button>
+      </div>
+      <label>Activity<input id="title" name="title" required maxlength="80" placeholder="e.g. Submit project brief"></label>
+      <label>Notes <span>(optional)</span><textarea id="notes" name="notes" rows="3" maxlength="240" placeholder="A little context for future you"></textarea></label>
+      <div class="form-grid">
+        <label>Date<input id="date" name="date" type="date" required></label>
+        <label>Time<input id="time" name="time" type="time" required></label>
+      </div>
+      <fieldset>
+        <legend>Remind me</legend>
+        <label class="check-row"><input id="day-reminder" type="checkbox" checked><span>1 day before</span></label>
+        <label class="check-row"><input id="hour-reminder" type="checkbox" checked><span>1 hour before</span></label>
+      </fieldset>
+      <div class="dialog-actions"><button class="secondary-button" value="cancel">Cancel</button><button class="primary-button" value="default">Save activity</button></div>
+    </form>
+  </dialog>
+  <script src="app.js"></script>
+</body>
+</html>
