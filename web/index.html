@@ -39,10 +39,12 @@
     <section id="notes-list" class="notes-list" aria-live="polite"></section>
   </main>
 
+  <button class="install-button" id="install-button" type="button">Install app</button>
+
   <dialog id="note-dialog">
     <form method="dialog" id="note-form" class="dialog-card">
       <div class="dialog-heading">
-        <div><p class="eyebrow">New reminder</p><h2>Add activity</h2></div>
+        <div><p class="eyebrow" id="dialog-eyebrow">New reminder</p><h2 id="dialog-title">Add activity</h2></div>
         <button class="close-button" value="cancel" aria-label="Close">&times;</button>
       </div>
       <label>Activity<input id="title" name="title" required maxlength="80" placeholder="e.g. Submit project brief"></label>
@@ -55,8 +57,14 @@
         <legend>Remind me</legend>
         <label class="check-row"><input id="day-reminder" type="checkbox" checked><span>1 day before</span></label>
         <label class="check-row"><input id="hour-reminder" type="checkbox" checked><span>1 hour before</span></label>
+        <button class="custom-reminder-button" id="custom-reminder-button" type="button">+ Add custom reminder</button>
+        <div class="custom-reminder-fields" id="custom-reminder-fields" aria-hidden="true">
+          <label class="check-row custom-toggle"><input id="custom-reminder-enabled" type="checkbox" checked><span>Custom reminder on</span></label>
+          <label>Remind me <input id="custom-value" type="number" min="1" max="365" value="2"></label>
+          <label>Unit<select id="custom-unit"><option value="minutes">minutes</option><option value="hours" selected>hours</option><option value="days">days</option></select></label>
+        </div>
       </fieldset>
-      <div class="dialog-actions"><button class="secondary-button" value="cancel">Cancel</button><button class="primary-button" value="default">Save activity</button></div>
+      <div class="dialog-actions"><button class="secondary-button" value="cancel">Cancel</button><button class="primary-button" id="save-button" value="default">Save activity</button></div>
     </form>
   </dialog>
   <script src="app.js"></script>

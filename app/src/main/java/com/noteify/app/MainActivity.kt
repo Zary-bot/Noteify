@@ -31,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -118,6 +119,7 @@ private fun NoteifyApp() {
     val store = remember { NoteStore(context) }
     var notes by remember { mutableStateOf(store.load().sortedBy { it.deadline }) }
     var showAdd by remember { mutableStateOf(false) }
+    var editingNote by remember { mutableStateOf<Note?>(null) }
 
     MaterialTheme(colorScheme = androidx.compose.material3.lightColorScheme(primary = Coral, onBackground = Ink, background = Cream)) {
         Scaffold(
@@ -130,7 +132,7 @@ private fun NoteifyApp() {
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = { showAdd = true }, containerColor = Coral, contentColor = Color.White) {
+                FloatingActionButton(onClick = { editingNote = null; showAdd = true }, containerColor = Coral, contentColor = Color.White) {
                     Icon(Icons.Rounded.Add, contentDescription = "Add activity")
                 }
             }
@@ -138,12 +140,13 @@ private fun NoteifyApp() {
             Column(Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp)) {
                 Text("Your next things", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                 Text("Keep the important dates close.", color = Color(0xFF77736D), modifier = Modifier.padding(top = 4.dp, bottom = 20.dp))
-                if (notes.isEmpty()) EmptyState(onAdd = { showAdd = true }) else {
+                if (notes.isEmpty()) EmptyState(onAdd = { editingNote = null; showAdd = true }) else {
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 96.dp)) {
                         items(notes, key = { it.id }) { note ->
                             NoteCard(note,
                                 onComplete = { updated -> notes = notes.map { if (it.id == updated.id) updated else it }; store.save(notes) },
-                                onDelete = { notes = notes.filterNot { it.id == note.id }; store.save(notes) })
+                                onDelete = { notes = notes.filterNot { it.id == note.id }; store.save(notes) },
+                                onEdit = { editingNote = note; showAdd = true })
                         }
                     }
                 }
@@ -151,12 +154,13 @@ private fun NoteifyApp() {
         }
     }
     if (showAdd) AddNoteDialog(
-        onDismiss = { showAdd = false },
+        existingNote = editingNote,
+        onDismiss = { showAdd = false; editingNote = null },
         onSave = { note ->
-            notes = (notes + note).sortedBy { it.deadline }
+            notes = if (editingNote == null) notes + note else notes.map { if (it.id == note.id) note else it }.sortedBy { it.deadline }
             store.save(notes)
             scheduleReminders(context, note)
-            showAdd = false
+            showAdd = false; editingNote = null
         }
     )
 }
@@ -175,7 +179,7 @@ private fun EmptyState(onAdd: () -> Unit) {
 }
 
 @Composable
-private fun NoteCard(note: Note, onComplete: (Note) -> Unit, onDelete: () -> Unit) {
+private fun NoteCard(note: Note, onComplete: (Note) -> Unit, onDelete: () -> Unit, onEdit: () -> Unit) {
     val formatter = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
     Card(colors = CardDefaults.cardColors(containerColor = Color.White), shape = RoundedCornerShape(18.dp), modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp)) {
@@ -185,6 +189,7 @@ private fun NoteCard(note: Note, onComplete: (Note) -> Unit, onDelete: () -> Uni
                     Text(if (note.completed) "Completed" else formatter.format(Date(note.deadline)), color = if (note.completed) Sage else Coral, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
                 }
                 IconButton(onClick = { onComplete(note.copy(completed = !note.completed)) }) { Icon(Icons.Rounded.Check, "Complete", tint = if (note.completed) Sage else Color.LightGray) }
+                IconButton(onClick = onEdit) { Icon(Icons.Rounded.Edit, "Edit", tint = Color(0xFF77736D)) }
                 IconButton(onClick = onDelete) { Icon(Icons.Rounded.DeleteOutline, "Delete", tint = Color(0xFF99938B)) }
             }
             if (note.notes.isNotBlank()) Text(note.notes, color = Color(0xFF77736D), modifier = Modifier.padding(top = 10.dp))
@@ -194,14 +199,14 @@ private fun NoteCard(note: Note, onComplete: (Note) -> Unit, onDelete: () -> Uni
 }
 
 @Composable
-private fun AddNoteDialog(onDismiss: () -> Unit, onSave: (Note) -> Unit) {
+private fun AddNoteDialog(existingNote: Note?, onDismiss: () -> Unit, onSave: (Note) -> Unit) {
     val context = LocalContext.current
-    var title by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-    var deadline by remember { mutableStateOf(Calendar.getInstance().apply { add(Calendar.HOUR, 2) }) }
-    var dayReminder by remember { mutableStateOf(true) }
-    var hourReminder by remember { mutableStateOf(true) }
-    AlertDialog(onDismissRequest = onDismiss, title = { Text("New activity") }, text = {
+    var title by remember(existingNote) { mutableStateOf(existingNote?.title ?: "") }
+    var notes by remember(existingNote) { mutableStateOf(existingNote?.notes ?: "") }
+    var deadline by remember(existingNote) { mutableStateOf(Calendar.getInstance().apply { timeInMillis = existingNote?.deadline ?: (System.currentTimeMillis() + 2 * 60 * 60 * 1000) }) }
+    var dayReminder by remember(existingNote) { mutableStateOf(existingNote?.dayReminder ?: true) }
+    var hourReminder by remember(existingNote) { mutableStateOf(existingNote?.hourReminder ?: true) }
+    AlertDialog(onDismissRequest = onDismiss, title = { Text(if (existingNote == null) "New activity" else "Edit activity") }, text = {
         Column {
             androidx.compose.material3.OutlinedTextField(title, { title = it }, label = { Text("Activity") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             androidx.compose.material3.OutlinedTextField(notes, { notes = it }, label = { Text("Notes (optional)") }, modifier = Modifier.fillMaxWidth().padding(top = 10.dp))
@@ -210,7 +215,7 @@ private fun AddNoteDialog(onDismiss: () -> Unit, onSave: (Note) -> Unit) {
             ReminderToggle("Remind me 1 day before", dayReminder) { dayReminder = it }
             ReminderToggle("Remind me 1 hour before", hourReminder) { hourReminder = it }
         }
-    }, confirmButton = { TextButton(enabled = title.isNotBlank(), onClick = { onSave(Note(UUID.randomUUID().toString(), title.trim(), notes.trim(), deadline.timeInMillis, dayReminder, hourReminder)) }) { Text("Save") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } })
+    }, confirmButton = { TextButton(enabled = title.isNotBlank(), onClick = { onSave(Note(existingNote?.id ?: UUID.randomUUID().toString(), title.trim(), notes.trim(), deadline.timeInMillis, dayReminder, hourReminder, existingNote?.completed ?: false)) }) { Text(if (existingNote == null) "Save" else "Save changes") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } })
 }
 
 @Composable

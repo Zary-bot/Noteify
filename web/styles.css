@@ -23,6 +23,8 @@ h2 { margin:0; font-size:1.3rem; }
 .primary-button:hover, .secondary-button:hover { transform:translateY(-2px); }
 .primary-button span { margin-right:5px; font-size:1.2rem; line-height:0; }
 .secondary-button { color:var(--ink); border:1px solid var(--line); background:transparent; }
+.install-button { position:fixed; left:18px; bottom:18px; z-index:5; padding:11px 15px; color:#fff; border:1px solid var(--coral); border-radius:10px; background:var(--coral); box-shadow:0 6px 18px #27252225; font-size:.82rem; font-weight:700; }
+.install-button:hover { background:#c96749; transform:translateY(-2px); }
 .notes-list { display:grid; gap:13px; padding-top:22px; }
 .note-card { display:grid; grid-template-columns:1fr auto; gap:15px; padding:21px; border:1px solid var(--line); border-radius:16px; background:var(--card); animation:rise .35s both; }
 .note-card.completed { opacity:.64; }
@@ -31,9 +33,11 @@ h2 { margin:0; font-size:1.3rem; }
 .note-date { margin:7px 0 0; color:var(--coral); font-size:.87rem; font-weight:600; }
 .note-details { margin:12px 0 0; color:var(--muted); line-height:1.5; }
 .note-reminders { margin:14px 0 0; color:var(--sage); font-size:.78rem; font-weight:700; }
-.note-actions { display:flex; align-items:start; gap:3px; }
-.action-button { width:34px; height:34px; border:0; border-radius:8px; color:var(--muted); background:transparent; }
+.note-actions { display:flex; align-items:start; gap:8px; flex-wrap:wrap; }
+.action-button { min-width:64px; height:36px; padding:0 11px; border:1px solid var(--line); border-radius:8px; color:var(--muted); background:var(--card); font-size:.78rem; font-weight:700; }
 .action-button:hover { background:#f0ece5; color:var(--ink); }
+.done-button { color:var(--sage); border-color:#c9d8cc; }
+.delete-button { color:#b45f4c; border-color:#e8c9bf; }
 .empty-state { padding:92px 20px; text-align:center; }
 .empty-icon { display:grid; place-items:center; width:52px; height:52px; margin:0 auto 18px; color:var(--coral); border:1px solid #e8b9a8; border-radius:15px; font:600 1.1rem ui-sans-serif, system-ui, sans-serif; }
 .empty-state h2 { margin:0; font-size:1.55rem; }
@@ -53,6 +57,11 @@ textarea { resize:vertical; }
 fieldset { display:grid; gap:8px; padding:0; border:0; }
 .check-row { display:flex; align-items:center; gap:9px; font-weight:500; }
 .check-row input { accent-color:var(--coral); width:17px; height:17px; }
+.custom-reminder-button { width:max-content; margin-top:3px; padding:4px 0; border:0; color:var(--coral); background:transparent; font-size:.82rem; font-weight:700; }
+.custom-reminder-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; max-height:0; overflow:hidden; padding:0; opacity:0; transform:translateY(-6px); transition:max-height .3s ease, padding .3s ease, opacity .2s ease, transform .3s ease; }
+.custom-reminder-fields.is-open { max-height:150px; padding:8px 0 2px; opacity:1; transform:translateY(0); }
+.custom-toggle { grid-column:1 / -1; }
+.custom-reminder-fields input, .custom-reminder-fields select { width:100%; margin-top:7px; padding:10px; color:var(--ink); border:1px solid var(--line); border-radius:8px; background:#fbfaf7; }
 .dialog-actions { display:flex; justify-content:end; gap:9px; padding-top:5px; }
 @keyframes rise { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
 @media (max-width:600px) { .shell { width:min(100% - 28px, 920px); padding-top:20px; } .intro { padding:66px 0 48px; } .toolbar { align-items:start; flex-direction:column; } .toolbar .primary-button { width:100%; } .note-card { grid-template-columns:1fr; } .note-actions { justify-content:end; } }
